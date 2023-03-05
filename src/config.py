@@ -11,4 +11,4 @@ class Config:
 
 class DevConfig(Config):
     debug = True 
-    SQLALCHEMY_DATABASE_URI  = "CONN_STR"
+    SQLALCHEMY_DATABASE_URI  = Config.conn_str
