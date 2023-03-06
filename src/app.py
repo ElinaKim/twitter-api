@@ -10,6 +10,8 @@ db = SQLAlchemy(app)
 def index():
     return "Hello World!"
 
+
+
 class User(db.Model):
     id = db.Column(db.Integer(), primary_key = True)
     username = db.Column(db.String(255))
@@ -25,6 +27,10 @@ class User(db.Model):
     
     def __repr__(self):
         return f"User '{self.username}'"
+
+#used to establish many-to-many relationship between posts and tags
+tags = db.Table('post_tags', db.Column('post_id', db.Integer, db.ForeignKey('post.id')),
+                db.Column('tag_id', db.Integer, db.ForeignKey('tag.id')))
     
 class Post(db.Model):
     id = db.Column(db.Integer(), primary_key = True)
@@ -37,12 +43,27 @@ class Post(db.Model):
         backref = 'post',
         lazy = 'dynamic'
     )
+    tags = db.relationship(
+        'Tag',
+        secondary = tags, 
+        backref = db.backref('posts', lazy = 'dynamic')
+    )
 
     def __init__(self, title):
         self.title = title
 
     def __repr__(self):
         return f"<Post '{self.title}'>"
+
+class Tag(db.Model):
+    id = db.Column(db.Integer(), primary_key = True)
+    title = db.Column(db.String(255))
+    
+    def __init__(self, title):
+        self.title = title
+    
+    def __repr__(self):
+        return "<Tag>'{}'>".format(self.title)
 
 class Comment(db.Model):
     id = db.Column(db.Integer(), primary_key = True)
@@ -55,6 +76,7 @@ class Comment(db.Model):
 
     def __repr__(self):
         return "<Comment '{}'>".format(self.text[:15])
+
 
 if __name__ == '__main__':
     app.run()
