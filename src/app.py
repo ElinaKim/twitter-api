@@ -1,10 +1,13 @@
 from flask import Flask
 from flask_sqlalchemy import SQLAlchemy
 from config import DevConfig
+import datetime
+from flask_migrate import Migrate
 
 app = Flask(__name__)
 app.config.from_object(DevConfig)
 db = SQLAlchemy(app)
+migrate = Migrate(app, db)
 
 @app.route('/')
 def index():
@@ -14,7 +17,7 @@ def index():
 
 class User(db.Model):
     id = db.Column(db.Integer(), primary_key = True)
-    username = db.Column(db.String(255))
+    username = db.Column(db.String(255), nullable = False, unique = True)
     password = db.Column(db.String(255))
     posts = db.relationship (
         'Post',
@@ -34,9 +37,9 @@ tags = db.Table('post_tags', db.Column('post_id', db.Integer, db.ForeignKey('pos
     
 class Post(db.Model):
     id = db.Column(db.Integer(), primary_key = True)
-    title = db.Column(db.String(255))
+    title = db.Column(db.String(255), nullable = False)
     text = db.Column(db.Text())
-    publish_date = db.Column(db.DateTime())
+    publish_date = db.Column(db.DateTime(), default = datetime.datetime.now)
     user_id = db.Column(db.Integer(), db.ForeignKey('user.id'))
     comments = db.relationship(
         'Comment',
@@ -57,7 +60,7 @@ class Post(db.Model):
 
 class Tag(db.Model):
     id = db.Column(db.Integer(), primary_key = True)
-    title = db.Column(db.String(255))
+    title = db.Column(db.String(255), nullable = False, unique = True)
     
     def __init__(self, title):
         self.title = title
@@ -67,9 +70,9 @@ class Tag(db.Model):
 
 class Comment(db.Model):
     id = db.Column(db.Integer(), primary_key = True)
-    name = db.Column(db.String(255))
+    name = db.Column(db.String(255), nullable = False)
     text = db.Column(db.Text())
-    date = db.Column(db.DateTime())
+    date = db.Column(db.DateTime(), default = datetime.datetime.now)
     post_id = db.Column(db.Integer(), db.ForeignKey('post.id'))
     def __repr__(self):
         return "<Comment '{}'>".format(self.text[:15])
